@@ -1,13 +1,12 @@
 import { expect } from 'chai'
 import { shallowMount } from '@vue/test-utils'
-import HelloWorld from '@/components/HelloWorld.vue'
+import IndexPage from '@/components/IndexPage.vue'
 
-describe('HelloWorld.vue', () => {
-  it('renders props.msg when passed', () => {
-    const msg = 'new message'
-    const wrapper = shallowMount(HelloWorld, {
-      propsData: { msg }
+describe('IndexPage.vue', () => {
+  it('renders "XMR Explorer"', () => {
+    const wrapper = shallowMount(IndexPage, {
+      propsData: {}
     })
-    expect(wrapper.text()).to.include(msg)
+    expect(wrapper.text()).to.include('XMR Explorer')
   })
 })
