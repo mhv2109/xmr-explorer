@@ -16,8 +16,5 @@ export default new Vuex.Store({
     setBreadcrumb (state, breadcrumb) {
       state.breadcrumb = breadcrumb
     }
-  },
-  actions: {
-
   }
 })
