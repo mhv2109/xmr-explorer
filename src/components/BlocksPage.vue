@@ -1,18 +1,25 @@
 <template>
   <b-row class="justify-content-md-center">
-    <data-table
-      :items="blocks"
-      :nItems="nBlocks"
-      :pageSize="10"
-      :fields="fields"
-      :callback="getBlocks"
-      :selectable="true"
-      :rowSelected="viewBlock" />
+    <b-col>
+      <b-card-group>
+        <b-card title="Mined Blocks">
+          <data-table
+            :items="blocks"
+            :nItems="nBlocks"
+            :pageSize="10"
+            :fields="fields"
+            :callback="getBlocks"
+            :selectable="true"
+            :rowSelected="viewBlock" />
+        </b-card>
+      </b-card-group>
+    </b-col>
   </b-row>
 </template>
 
 <script>
 import _ from 'lodash'
+import moment from 'moment'
 import DataTable from '@/components/common/DataTable'
 import client from '@/client'
 
@@ -24,7 +31,7 @@ export default {
   data () {
     return {
       blocks: [],
-      nBlocks: -1,
+      nBlocks: 0,
       fields: [
         { key: 'height' },
         { key: 'datetime' },
@@ -61,9 +68,10 @@ export default {
     async formatBlocks (blocks) {
       return Promise.all(blocks.map(async block => {
         block.datetime = this.formatTimestamp(block.timestamp)
+        block.block_size = block.block_size + ' B'
         try {
           let fees = await client.getTxFeeSum(block.height)
-          block.fees = _.divide(fees, 1e12)
+          block.fees = _.divide(fees, 1e12) + ' XMR'
         } catch (err) {
           // typically thrown because of restricted JSON_RPC
           block.fees = 'NOT AVAIL'
@@ -72,7 +80,7 @@ export default {
       }))
     },
     formatTimestamp (ts) {
-      return new Date(ts*1000).toString()
+      return moment(ts*1000).format('lll')
     },
     viewBlock (blockArray) {
       let height = blockArray[0].height

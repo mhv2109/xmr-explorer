@@ -138,7 +138,8 @@ export default {
     )
   },
   /**
-   * Get the coinbase ammount and the fees amount for n last blocks starting at particular height.
+   * Get the coinbase ammount and the fees amount for n last blocks starting at
+   * particular height.
    * @param {Number} height - block height
    * @param {Number} count - number of blocks to include in the sum 
    * @returns {Object}
@@ -172,6 +173,7 @@ export default {
   /**
    * Look up one transaction by hash.
    * @param {String} hash - Transaction hash
+   * @returns {Object}
    */
   async getTransaction (hash) {
     let response = await request({
@@ -182,21 +184,39 @@ export default {
     txs.forEach(tx => {
       tx.as_json = JSON.parse(tx.as_json)
     })
-    return txs
+    return txs[0]
   },
   /**
    * Look up one or more transactions by hash.
    * @param {String} hashes - Transaction hashes
+   * @returns {Array}
    */
   async getTransactions (...hashes) {
     let response = await request({
       txs_hashes: hashes,
       decode_as_json: true
     }, '/get_transactions')
-    let txs = response.txs
+    let txs = _.get(response, 'txs', [])
     txs.forEach(tx => {
       tx.as_json = JSON.parse(tx.as_json)
     })
     return txs
+  },
+  /**
+   * Show information about valid transactions seen by the node but not yet
+   * mined into a block, as well as spent key image information for the txpool
+   * in the node's memory.
+   * @returns {Object}
+   */
+  async getTransactionPool () {
+    let response = await request({}, '/get_transaction_pool')
+    if (_.has(response, 'transactions')) {
+      response.transactions.forEach(tx => {
+        tx.tx_json = JSON.parse(tx.tx_json)
+      })
+    } else {
+      response.transactions = []
+    }
+    return response
   }
 }

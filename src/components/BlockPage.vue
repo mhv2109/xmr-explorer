@@ -5,17 +5,37 @@
         <b-card-group>
           <b-card title="Block Info">
             <b-list-group>
-              <b-list-group-item class="text-left"><strong>Height:</strong> {{ height }}</b-list-group-item>
-              <b-list-group-item class="text-left"><strong>Timestamp:</strong> {{ datetime }}</b-list-group-item>
-              <b-list-group-item class="text-left"><strong>Transactions:</strong> {{ num_txes }}</b-list-group-item>
+              <b-list-group-item class="text-left">
+                <strong>Height:</strong> {{ height }}
+              </b-list-group-item>
+              <b-list-group-item class="text-left">
+                <strong>Hash:</strong> {{ hash }}
+              </b-list-group-item>
+              <b-list-group-item class="text-left">
+                <strong>Timestamp:</strong> {{ datetime }}
+              </b-list-group-item>
+              <b-list-group-item class="text-left">
+                <strong>Block Size:</strong> {{ block_size }} B
+              </b-list-group-item>
             </b-list-group>
           </b-card>
           <b-card>
             <b-list-group>
-              <b-list-group-item class="text-left"><strong>Difficulty:</strong> {{ difficulty }}</b-list-group-item>
-              <b-list-group-item class="text-left"><strong>Block Size:</strong> {{ block_size }}</b-list-group-item>
-              <b-list-group-item class="text-left"><strong>Fee Sum:</strong> {{ txFeeSum }}</b-list-group-item>
-              <b-list-group-item class="text-left"><strong>Block Reward:</strong> {{ reward }}</b-list-group-item>
+              <b-list-group-item class="text-left">
+                <strong>Transactions:</strong> {{ num_txes }}
+              </b-list-group-item>
+              <b-list-group-item class="text-left">
+                <strong>Fee Sum:</strong> {{ txFeeSum }} XMR
+              </b-list-group-item>
+              <b-list-group-item class="text-left">
+                <strong>Block Reward:</strong> {{ reward }} XMR
+              </b-list-group-item>
+              <b-list-group-item class="text-left">
+                <strong>Difficulty:</strong> {{ difficulty }}
+              </b-list-group-item>
+              <b-list-group-item class="text-left">
+                <strong>Nonce:</strong> {{ nonce }}
+              </b-list-group-item>
             </b-list-group>
           </b-card>
         </b-card-group>
@@ -29,7 +49,9 @@
               :items="[coinbase]"
               :nItems="1"
               :pageSize="1"
-              :fields="['hash', 'fee']" />
+              :fields="['hash', 'fee']"
+              :selectable="true"
+              :rowSelected="viewTransaction" />
           </b-card>
         </b-card-group>
       </b-col>
@@ -43,7 +65,9 @@
               :nItems="num_txes"
               :pageSize="10"
               :fields="['hash', 'fee']"
-              :callback="getTransactions" />
+              :callback="getTransactions"
+              :selectable="true"
+              :rowSelected="viewTransaction" />
           </b-card>
         </b-card-group>
       </b-col>
@@ -53,6 +77,7 @@
 
 <script>
 import _ from 'lodash'
+import moment from 'moment'
 import DataTable from '@/components/common/DataTable'
 import client from '@/client'
 
@@ -112,7 +137,9 @@ export default {
   },
   methods: {
     async formatBlock (block) {
-      block.block_header.datetime = this.formatTimestamp(block.block_header.timestamp)
+      block.block_header.datetime = this.formatTimestamp(
+        block.block_header.timestamp)
+      block.block_header.reward = _.divide(block.block_header.reward, 1e12)
       try {
         let fees = await client.getTxFeeSum(block.block_header.height)
         block.block_header.txFeeSum = _.divide(fees, 1e12) 
@@ -123,14 +150,14 @@ export default {
       return block
     },
     formatTimestamp (ts) {
-      return new Date(ts*1000).toString()
+      return moment(ts*1000).format('lll')
     },
     formatTransaction (tx, is_coinbase=false) {
       let json = tx.as_json
       let fee = is_coinbase ? json.vout[0].amount : json.rct_signatures.txnFee
       return {
         hash: tx.tx_hash,
-        fee: _.divide(fee, 1e12)
+        fee: _.divide(fee, 1e12) + 'XMR'
       }
     },
     async getTransactions (page, count) {
@@ -140,6 +167,10 @@ export default {
 
       let coinbase = await client.getTransactions(this.miner_tx_hash)
       this.coinbase = this.formatTransaction(coinbase[0], true)
+    },
+    viewTransaction (transArray) {
+      let hash = transArray[0].hash
+      this.$router.push({ path: `/transaction/${hash}` })
     }
   }
 }
