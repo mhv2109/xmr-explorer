@@ -1,0 +1,23 @@
+server {
+
+  listen 80;
+  listen [::]:80 ipv6only=on;
+
+  keepalive_timeout  60;
+
+  server_name XMR_EXPLORER_HOSTNAME;
+
+  location ~*/(json_rpc|get_transactions|get_transaction_pool)$ {
+    proxy_pass MONEROD_HOSTNAME; 
+  }
+
+  location / {
+    root XMR_EXPLORER_BUNDLE_DIR;
+    index index.html;
+  } 
+
+  location = /favicon.ico {
+    log_not_found off;
+  }
+
+}
