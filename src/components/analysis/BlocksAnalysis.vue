@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import store from 'store'
+import localforage from 'localforage'
 import _ from 'lodash'
 import client from '@/client'
 
@@ -39,12 +39,12 @@ async function getBlock (height) {
  * @returns {Object}
  */
 async function getBlockFromCache (height) {
-  let value = store.get(height)
+  let value = await localforage.getItem('block-' + height)
   if (value) {
     return value
   }
   value = await getBlock(height)
-  store.set(height, value)
+  localforage.setItem('block-' + height, value)
   return value
 }
 
