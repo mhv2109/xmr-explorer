@@ -12,6 +12,9 @@
               <b-nav-item>
                 <router-link to="/transactions">Transactions</router-link>
               </b-nav-item>
+              <b-nav-item>
+                <router-link to="/analysis">Analysis</router-link>
+              </b-nav-item>
             </b-navbar-nav>
           </b-navbar>
         </b-col>
